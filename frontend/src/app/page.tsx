@@ -3,14 +3,17 @@
 import { useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import "github-markdown-css";
 
 export default function Home() {
   const [topic, setTopic] = useState("");
   const [why, setWhy] = useState("");
+  const [timeline, setTimeline] = useState("");
   const [loading, setLoading] = useState(false);
   const [response, setResponse] = useState<string | null>(null);
   const [followUp, setFollowUp] = useState("");
   const [showFollowUp, setShowFollowUp] = useState(false);
+  const [stage, setStage] = useState(1);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,11 +27,13 @@ export default function Home() {
         body: JSON.stringify({
           what: topic,
           why: why,
+          stage: 1,
         }),
       });
       const data = await res.json();
       setResponse(data.plan);
       setShowFollowUp(true);
+      setStage(1);
     } catch (error) {
       console.error("Error:", error);
     } finally {
@@ -52,6 +57,32 @@ export default function Home() {
       const data = await res.json();
       setResponse(data.plan);
       setFollowUp("");
+    } catch (error) {
+      console.error("Error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const nextStage = async () => {
+    setLoading(true);
+    try {
+      const nextStageNumber = stage + 1;
+      const res = await fetch("http://localhost:4000/resources", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          what: topic,
+          why: why,
+          stage: nextStageNumber,
+        }),
+      });
+      const data = await res.json();
+      setResponse(data.plan);
+      setFollowUp("");
+      setStage(nextStageNumber);
     } catch (error) {
       console.error("Error:", error);
     } finally {
@@ -115,6 +146,24 @@ export default function Home() {
                 />
               </div>
 
+              <div>
+                <label
+                  htmlFor="timeline"
+                  className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2"
+                >
+                  How long do you have to learn this?
+                </label>
+                <textarea
+                  id="timeline"
+                  value={timeline}
+                  onChange={(e) => setTimeline(e.target.value)}
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-indigo-500 dark:focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all"
+                  placeholder="How long do you have to learn this? (in weeks)"
+                  rows={4}
+                  required
+                />
+              </div>
+
               <button
                 type="submit"
                 disabled={loading}
@@ -142,14 +191,21 @@ export default function Home() {
             <div className="space-y-6">
               {/* Roadmap Display */}
               <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-xl">
-                <h2 className="text-2xl font-semibold mb-4 text-gray-800 dark:text-white">
+                <h2 className="text-2xl font-semibold mb-6 text-gray-800 dark:text-white">
                   Your Learning Roadmap
                 </h2>
-                <div className="prose prose-indigo dark:prose-invert max-w-none">
-                  <ReactMarkdown
-                    remarkPlugins={[remarkGfm]}
-                    className="text-gray-600 dark:text-gray-300"
-                  >
+                <div
+                  className="markdown-body dark:markdown-dark prose dark:prose-invert max-w-none 
+                  prose-headings:font-bold
+                  prose-h1:text-3xl prose-h1:mb-6 
+                  prose-h2:text-2xl prose-h2:mb-4 prose-h2:mt-8
+                  prose-h3:text-xl prose-h3:mb-3
+                  prose-p:mb-4 prose-p:leading-relaxed
+                  prose-ul:my-4 prose-ul:list-disc prose-ul:pl-6
+                  prose-li:my-2 prose-li:pl-2
+                  prose-strong:text-indigo-600 dark:prose-strong:text-indigo-400"
+                >
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
                     {response}
                   </ReactMarkdown>
                 </div>
@@ -159,7 +215,9 @@ export default function Home() {
               {showFollowUp && (
                 <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-xl">
                   <h3 className="text-xl font-semibold mb-4 text-gray-800 dark:text-white">
-                    Would you like to modify anything?
+                    {stage === 3
+                      ? "Final Stage"
+                      : "Would you like to modify anything?"}
                   </h3>
                   <form onSubmit={handleFollowUp} className="space-y-4">
                     <textarea
@@ -183,13 +241,15 @@ export default function Home() {
                       >
                         {loading ? "Updating..." : "Update Roadmap"}
                       </button>
-                      <button
-                        type="button"
-                        onClick={() => setShowFollowUp(false)}
-                        className="flex-1 py-3 px-6 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200"
-                      >
-                        Continue
-                      </button>
+                      {stage < 3 && (
+                        <button
+                          type="button"
+                          onClick={nextStage}
+                          className="flex-1 py-3 px-6 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200"
+                        >
+                          Continue to {stage === 1 ? "How" : "Study Plan"}
+                        </button>
+                      )}
                     </div>
                   </form>
                 </div>
