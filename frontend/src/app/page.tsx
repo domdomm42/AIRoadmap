@@ -1,25 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
-import "github-markdown-css";
-
+import ResponseField from "./components/ResponseField";
+import SetupForm from "./components/SetupForm";
+import FollowUpInput from "./components/FollowUpInput";
 export default function Home() {
-  const [topic, setTopic] = useState("");
-  const [why, setWhy] = useState("");
-  const [timeline, setTimeline] = useState("");
   const [loading, setLoading] = useState(false);
-  const [response, setResponse] = useState<string | null>(null);
-  const [followUp, setFollowUp] = useState("");
-  const [showFollowUp, setShowFollowUp] = useState(false);
-  const [stage, setStage] = useState(1);
+  const [whatResponse, setWhatResponse] = useState<string | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleWhatFormSubmit = async (topic: string, why: string) => {
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:4000/resources", {
+      const res = await fetch("http://localhost:4000/resources/setupGoal", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -27,64 +19,33 @@ export default function Home() {
         body: JSON.stringify({
           what: topic,
           why: why,
-          stage: 1,
         }),
       });
       const data = await res.json();
-      setResponse(data.plan);
-      setShowFollowUp(true);
-      setStage(1);
+      setWhatResponse(data);
     } catch (error) {
       console.error("Error:", error);
+      setWhatResponse("An error occurred while generating the roadmap.");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleFollowUp = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleFollowUp = async (followUp: string) => {
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:4000/resources", {
+      const res = await fetch("http://localhost:4000/resources/followup", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          followUp,
-        }),
+        body: JSON.stringify({ question: followUp }),
       });
       const data = await res.json();
-      setResponse(data.plan);
-      setFollowUp("");
+      setWhatResponse(data);
     } catch (error) {
       console.error("Error:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const nextStage = async () => {
-    setLoading(true);
-    try {
-      const nextStageNumber = stage + 1;
-      const res = await fetch("http://localhost:4000/resources", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          what: topic,
-          why: why,
-          stage: nextStageNumber,
-        }),
-      });
-      const data = await res.json();
-      setResponse(data.plan);
-      setFollowUp("");
-      setStage(nextStageNumber);
-    } catch (error) {
-      console.error("Error:", error);
+      setWhatResponse("An error occurred while generating the roadmap.");
     } finally {
       setLoading(false);
     }
@@ -105,157 +66,16 @@ export default function Home() {
           </div>
 
           {/* Initial Form */}
-          {!response && (
-            <form
-              onSubmit={handleSubmit}
-              className="space-y-6 bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-xl"
-            >
-              <div>
-                <label
-                  htmlFor="topic"
-                  className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2"
-                >
-                  What do you want to learn?
-                </label>
-                <input
-                  id="topic"
-                  type="text"
-                  value={topic}
-                  onChange={(e) => setTopic(e.target.value)}
-                  className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-indigo-500 dark:focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all"
-                  placeholder="e.g., Machine Learning, Web Development"
-                  required
-                />
-              </div>
-
-              <div>
-                <label
-                  htmlFor="why"
-                  className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2"
-                >
-                  Why do you want to learn this?
-                </label>
-                <textarea
-                  id="why"
-                  value={why}
-                  onChange={(e) => setWhy(e.target.value)}
-                  className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-indigo-500 dark:focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all"
-                  placeholder="Your motivation and goals..."
-                  rows={4}
-                  required
-                />
-              </div>
-
-              <div>
-                <label
-                  htmlFor="timeline"
-                  className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2"
-                >
-                  How long do you have to learn this?
-                </label>
-                <textarea
-                  id="timeline"
-                  value={timeline}
-                  onChange={(e) => setTimeline(e.target.value)}
-                  className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-indigo-500 dark:focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all"
-                  placeholder="How long do you have to learn this? (in weeks)"
-                  rows={4}
-                  required
-                />
-              </div>
-
-              <button
-                type="submit"
-                disabled={loading}
-                className={`w-full py-3 px-6 rounded-lg text-white font-medium 
-                  ${
-                    loading
-                      ? "bg-gray-400 cursor-not-allowed"
-                      : "bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
-                  } transition-all duration-200 transform hover:scale-[1.02]`}
-              >
-                {loading ? (
-                  <div className="flex items-center justify-center">
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2" />
-                    Generating...
-                  </div>
-                ) : (
-                  "Generate Roadmap"
-                )}
-              </button>
-            </form>
-          )}
-
-          {/* Response and Follow-up Section */}
-          {response && (
-            <div className="space-y-6">
-              {/* Roadmap Display */}
-              <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-xl">
-                <h2 className="text-2xl font-semibold mb-6 text-gray-800 dark:text-white">
-                  Your Learning Roadmap
-                </h2>
-                <div
-                  className="markdown-body dark:markdown-dark prose dark:prose-invert max-w-none 
-                  prose-headings:font-bold
-                  prose-h1:text-3xl prose-h1:mb-6 
-                  prose-h2:text-2xl prose-h2:mb-4 prose-h2:mt-8
-                  prose-h3:text-xl prose-h3:mb-3
-                  prose-p:mb-4 prose-p:leading-relaxed
-                  prose-ul:my-4 prose-ul:list-disc prose-ul:pl-6
-                  prose-li:my-2 prose-li:pl-2
-                  prose-strong:text-indigo-600 dark:prose-strong:text-indigo-400"
-                >
-                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                    {response}
-                  </ReactMarkdown>
-                </div>
-              </div>
-
-              {/* Follow-up Section */}
-              {showFollowUp && (
-                <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-xl">
-                  <h3 className="text-xl font-semibold mb-4 text-gray-800 dark:text-white">
-                    {stage === 3
-                      ? "Final Stage"
-                      : "Would you like to modify anything?"}
-                  </h3>
-                  <form onSubmit={handleFollowUp} className="space-y-4">
-                    <textarea
-                      value={followUp}
-                      onChange={(e) => setFollowUp(e.target.value)}
-                      className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-indigo-500 dark:focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all"
-                      placeholder="Ask for modifications or clarifications..."
-                      rows={3}
-                      required
-                    />
-                    <div className="flex gap-4">
-                      <button
-                        type="submit"
-                        disabled={loading}
-                        className={`flex-1 py-3 px-6 rounded-lg text-white font-medium 
-                          ${
-                            loading
-                              ? "bg-gray-400 cursor-not-allowed"
-                              : "bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
-                          } transition-all duration-200`}
-                      >
-                        {loading ? "Updating..." : "Update Roadmap"}
-                      </button>
-                      {stage < 3 && (
-                        <button
-                          type="button"
-                          onClick={nextStage}
-                          className="flex-1 py-3 px-6 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200"
-                        >
-                          Continue to {stage === 1 ? "How" : "Study Plan"}
-                        </button>
-                      )}
-                    </div>
-                  </form>
-                </div>
-              )}
+          {whatResponse ? (
+            <div>
+              <ResponseField response={whatResponse} />
+              <FollowUpInput onSubmit={handleFollowUp} loading={loading} />
+              <button>continue</button>
             </div>
+          ) : (
+            <SetupForm onSubmit={handleWhatFormSubmit} loading={loading} />
           )}
+          {/* {howResponse && <ResponseField response={howResponse} />} */}
         </div>
       </div>
     </div>
