@@ -1,5 +1,4 @@
 import { Request, Response } from "express";
-import OpenAI from "openai";
 import {
   setupUltralearningPlan,
   createHowUltralearningPlan,
@@ -45,7 +44,8 @@ export const handleCreateHowUltralearningPlan = async (
 
 export const handleCreateStudyPlan = async (req: Request, res: Response) => {
   try {
-    const result = await createStudyPlan(conversationHistory);
+    const { timeslot } = req.body;
+    const result = await createStudyPlan(conversationHistory, timeslot);
     res.status(200).json(result);
   } catch (error) {
     res.status(500).json({ error: "Failed to create study plan" });

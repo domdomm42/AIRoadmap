@@ -62,12 +62,12 @@ export const createHowUltralearningPlan = async (
 };
 
 export const createStudyPlan = async (
-  conversationHistory: { role: string; content: string }[]
+  conversationHistory: { role: string; content: string }[],
+  timeslot: string
 ) => {
   conversationHistory.push({
     role: "user",
-    content:
-      "Now let’s create a study plan. Please format the response in markdown with emojis and clear section headers.",
+    content: `Now let’s create the study plan. Please format the response in markdown with emojis and clear section headers. I have a timeslot of ${timeslot}. Give me free online resources to learn the concepts and if possible online assessment to test my understanding. Give all the resources with links.`,
   });
   const response = await openai.chat.completions.create({
     model: "gpt-4o-mini",
