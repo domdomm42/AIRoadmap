@@ -19,6 +19,9 @@ export default function Home() {
   const [whatResponse, setWhatResponse] = useState<string | null>(null);
   const [howResponse, setHowResponse] = useState<string | null>(null);
   const [scheduleResponse, setScheduleResponse] = useState<string | null>(null);
+  const [conversationHistory, setConversationHistory] = useState<
+    { role: string; content: string }[]
+  >([]);
 
   const handleWhatFormSubmit = async (topic: string, why: string) => {
     setLoading(true);
@@ -31,10 +34,15 @@ export default function Home() {
         body: JSON.stringify({
           what: topic,
           why: why,
+          conversationHistory,
         }),
       });
       const data = await res.json();
       setWhatResponse(data);
+      setConversationHistory((prev) => [
+        ...prev,
+        { role: "assistant", content: data },
+      ]);
       setCurrentStage(Stage.WHAT);
     } catch (error) {
       console.error("Error:", error);
@@ -52,9 +60,16 @@ export default function Home() {
         headers: {
           "Content-Type": "application/json",
         },
+        body: JSON.stringify({
+          conversationHistory,
+        }),
       });
       const data = await res.json();
       setHowResponse(data);
+      setConversationHistory((prev) => [
+        ...prev,
+        { role: "assistant", content: data },
+      ]);
       setCurrentStage(Stage.HOW);
     } catch (error) {
       console.error("Error:", error);
@@ -74,10 +89,15 @@ export default function Home() {
         },
         body: JSON.stringify({
           timeslot: timeslot,
+          conversationHistory,
         }),
       });
       const data = await res.json();
       setScheduleResponse(data);
+      setConversationHistory((prev) => [
+        ...prev,
+        { role: "assistant", content: data },
+      ]);
       setCurrentStage(Stage.SCHEDULE);
     } catch (error) {
       console.error("Error:", error);
