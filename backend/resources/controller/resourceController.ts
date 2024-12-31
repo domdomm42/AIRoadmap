@@ -6,12 +6,10 @@ import {
   addFollowup,
 } from "../services/aiService";
 
-const conversationHistory: { role: string; content: string }[] = [];
-
 // Initial setup/goal route
 export const handleSetupGoal = async (req: Request, res: Response) => {
   try {
-    const { what, why } = req.body;
+    const { what, why, conversationHistory } = req.body;
     const result = await setupUltralearningPlan(what, why, conversationHistory);
     res.status(200).json(result);
   } catch (error) {
@@ -22,7 +20,7 @@ export const handleSetupGoal = async (req: Request, res: Response) => {
 // Follow-up questions route
 export const handleFollowUp = async (req: Request, res: Response) => {
   try {
-    const { question } = req.body;
+    const { question, conversationHistory } = req.body;
     const result = await addFollowup(conversationHistory, question);
     res.status(200).json(result);
   } catch (error) {
@@ -35,6 +33,7 @@ export const handleCreateHowUltralearningPlan = async (
   res: Response
 ) => {
   try {
+    const { conversationHistory } = req.body;
     const result = await createHowUltralearningPlan(conversationHistory);
     res.status(200).json(result);
   } catch (error) {
@@ -44,7 +43,7 @@ export const handleCreateHowUltralearningPlan = async (
 
 export const handleCreateStudyPlan = async (req: Request, res: Response) => {
   try {
-    const { timeslot } = req.body;
+    const { timeslot, conversationHistory } = req.body;
     const result = await createStudyPlan(conversationHistory, timeslot);
     res.status(200).json(result);
   } catch (error) {
