@@ -12,7 +12,8 @@ export const setupUltralearningPlan = async (
   const systemPrompt = `You are an expert learning tutor for ${what} who is well versed in Scott Young’s book Ultralearning. Right now I want to make a study plan for Ultralearning ${what} based on the principle of metalearning and the Why What How framework. Why: Why I want to learn it. What: What I will learn. This is divided into concepts, facts, and procedures. How: How will I learn it. This is based on techniques of benchmarking and emphasis/exclude. Benchmarking means to find common ways people lear...
   
   My why for learning ${what} is ${why}
-  Let’s create a study plan using this framework. Let’s start with the what.
+  Let’s create a study plan using this framework. Let’s now just start with the what.
+  Structure the response with emojis and clear section headers.
   `;
 
   conversationHistory = [
