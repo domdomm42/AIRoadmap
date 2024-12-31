@@ -26,8 +26,8 @@ export default function TimeslotForm({ onSubmit, loading }: TimeslotFormProps) {
           htmlFor="timeslot"
           className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2"
         >
-          What is your availability and Ill make you a study plan with
-          resources? (The more specific, the better)
+          What is your availability and I will make you a study plan with
+          resources (The more specific, the better)
         </label>
         <input
           id="timeslot"

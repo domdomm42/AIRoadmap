@@ -60,7 +60,6 @@ export default function SetupForm({ onSubmit, loading }: SetupFormProps) {
       <button
         type="submit"
         disabled={loading}
-        onClick={handleSubmit}
         className={`w-full py-3 px-6 rounded-lg text-white font-medium 
       ${
         loading
