@@ -6,6 +6,9 @@ import SetupForm from "./components/SetupForm";
 import TimeslotForm from "./components/TimeslotForm";
 import ContinueButton from "./components/ContinueButton";
 
+const BACKEND_URL =
+  process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000";
+
 enum Stage {
   SETUP = "SETUP",
   WHAT = "WHAT",
@@ -26,7 +29,7 @@ export default function Home() {
   const handleWhatFormSubmit = async (topic: string, why: string) => {
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:4000/resources/setupGoal", {
+      const res = await fetch(`${BACKEND_URL}/resources/setupGoal`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -55,7 +58,7 @@ export default function Home() {
   const getHowData = async () => {
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:4000/resources/howPlan", {
+      const res = await fetch(`${BACKEND_URL}/resources/howPlan`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -82,7 +85,7 @@ export default function Home() {
   const getSchedule = async (timeslot: string) => {
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:4000/resources/studyPlan", {
+      const res = await fetch(`${BACKEND_URL}/resources/studyPlan`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
